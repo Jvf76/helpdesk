@@ -16,6 +16,7 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; }
+body.modal-open { overflow: hidden; }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
 
@@ -114,6 +115,8 @@ button { cursor: pointer; }
 .ticket-heading h3 { margin: 9px 0 0; font: 700 17px 'Manrope', sans-serif; letter-spacing: -.3px; }
 .round-button { width: 36px; height: 36px; flex: none; border-radius: 50%; }
 .round-button:hover { color: white; border-color: var(--green); background: var(--green); }
+.open-ticket-action { display: flex; align-items: center; gap: 9px; flex: none; }
+.open-ticket-action > span { color: #727872; font-size: 10px; font-weight: 700; }
 .ticket-description { margin: 10px 50px 17px 0; color: #6f756f; font-size: 13px; line-height: 1.55; }
 .ticket-footer { display: flex; align-items: center; gap: 18px; padding-top: 14px; border-top: 1px solid #eceee9; }
 .requester { display: flex; align-items: center; gap: 9px; }
@@ -128,6 +131,65 @@ button { cursor: pointer; }
 .empty-state h3 { margin: 10px 0 4px; color: #4a514b; }
 .empty-state p { margin: 0; font-size: 13px; }
 
+.modal-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px; background: rgba(18,29,24,.58); backdrop-filter: blur(5px); animation: fade-in .18s ease-out; }
+.modal-card { width: min(680px, 100%); max-height: calc(100vh - 48px); overflow-y: auto; border: 1px solid rgba(255,255,255,.55); border-radius: 18px; background: #fafaf7; box-shadow: 0 28px 80px rgba(15,28,22,.28); animation: modal-in .22s ease-out; }
+.modal-card.modal-wide { width: min(790px, 100%); }
+.modal-header { position: sticky; top: 0; z-index: 2; display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; padding: 25px 27px 21px; border-bottom: 1px solid var(--line); background: rgba(250,250,247,.96); backdrop-filter: blur(12px); }
+.modal-header h2 { margin: 9px 0 0; font: 700 24px/1.25 'Manrope', sans-serif; letter-spacing: -.7px; }
+.modal-header .eyebrow { margin-bottom: 5px; }
+.modal-intro { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.modal-close { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border: 1px solid var(--line); border-radius: 50%; color: #687069; background: white; }
+.modal-close:hover { color: white; border-color: var(--green-dark); background: var(--green-dark); }
+.modal-body { padding: 23px 27px 5px; }
+.detail-highlight { display: flex; align-items: center; gap: 12px; padding: 15px; border-radius: 12px; background: #eef2eb; }
+.large-avatar { width: 40px; height: 40px; }
+.detail-highlight > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.detail-highlight small, .detail-highlight span span { color: #80877f; font-size: 10px; }
+.detail-highlight strong { font-size: 13px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; overflow: hidden; margin: 18px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--line); }
+.detail-grid > div { display: flex; flex-direction: column; gap: 5px; padding: 14px 15px; background: white; }
+.detail-grid small { color: #8a9089; font-size: 10px; }
+.detail-grid strong { font-size: 12px; }
+.detail-section { padding: 16px 0; border-top: 1px solid #e7e9e4; }
+.detail-section:first-of-type { border-top: 0; }
+.detail-label { display: flex; align-items: center; gap: 6px; color: #7b827b; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+.detail-section p { margin: 8px 0 0; color: #4f5650; font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 18px 27px 24px; }
+.secondary-button, .primary-action { min-height: 42px; padding: 0 16px; border-radius: 9px; font-size: 12px; font-weight: 700; }
+.secondary-button { color: #59605a; border: 1px solid var(--line); background: white; }
+.primary-action { color: white; border: 1px solid var(--green-dark); background: var(--green-dark); }
+.secondary-button:hover { border-color: #aeb5ad; }
+.primary-action:hover { background: #162e26; }
+.no-attachments { color: #929891 !important; font-size: 12px !important; }
+.attachment-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; margin-top: 10px; }
+.attachment-item { min-width: 0; display: flex; align-items: center; gap: 10px; padding: 10px; color: inherit; border: 1px solid var(--line); border-radius: 10px; background: white; text-decoration: none; }
+.attachment-item:hover { border-color: #9daa99; }
+.attachment-item > span:last-child { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.attachment-item strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.attachment-item small { color: #8b918b; font-size: 9px; }
+.attachment-icon { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 8px; color: var(--green); background: #eaf0e6; }
+.attachment-preview { align-items: stretch; padding: 6px; }
+.attachment-preview img, .attachment-preview video { width: 76px; height: 55px; flex: none; object-fit: cover; border-radius: 7px; background: #e5e8e3; }
+.attachment-preview > span { justify-content: center; }
+
+.ticket-form { padding: 23px 27px 27px; }
+.ticket-form > label, .form-grid label { display: flex; flex-direction: column; gap: 8px; margin-bottom: 17px; color: #4d544e; font-size: 12px; font-weight: 700; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.ticket-form input:not([type="file"]), .ticket-form textarea { width: 100%; padding: 12px 13px; outline: 0; border: 1px solid #d9ddd6; border-radius: 9px; color: var(--ink); background: white; font-size: 13px; font-weight: 400; resize: vertical; transition: .2s; }
+.ticket-form input:focus, .ticket-form textarea:focus { border-color: #557963; box-shadow: 0 0 0 3px rgba(54,93,74,.1); }
+.ticket-form textarea::placeholder, .ticket-form input::placeholder { color: #a2a7a1; }
+.field-help { align-self: flex-end; margin-top: -3px; color: #929791; font-size: 9px; font-weight: 500; }
+.upload-section { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 15px; border: 1px dashed #bfc7bc; border-radius: 12px; background: #f2f5ef; }
+.upload-section strong { font-size: 12px; }
+.upload-section p { margin: 4px 0 0; color: #838982; font-size: 10px; }
+.upload-button { min-height: 39px; display: flex; align-items: center; gap: 8px; padding: 0 13px; border: 1px solid #cdd3cb; border-radius: 8px; background: white; font-size: 11px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.upload-button input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+.ticket-form-error { margin: 14px 0 0; }
+.form-footer { margin: 22px -27px -27px; padding-bottom: 0; border-top: 1px solid var(--line); }
+
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes modal-in { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+
 @media (max-width: 900px) {
   .login-page { grid-template-columns: 1fr; }
   .login-story { display: none; }
@@ -136,6 +198,7 @@ button { cursor: pointer; }
   .topbar { grid-template-columns: 1fr auto; padding: 0 22px; }
   .topbar nav, .user-info, .logout-button { display: none; }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .open-ticket-action > span { display: none; }
 }
 
 @media (max-width: 620px) {
@@ -154,4 +217,14 @@ button { cursor: pointer; }
   .ticket-footer { flex-wrap: wrap; gap: 10px; }
   .sla { width: 100%; margin-left: 0; }
   .category { margin-left: auto; }
+  .modal-backdrop { align-items: end; padding: 0; }
+  .modal-card, .modal-card.modal-wide { width: 100%; max-height: 92vh; border-radius: 18px 18px 0 0; }
+  .modal-header { padding: 21px 18px 17px; }
+  .modal-header h2 { font-size: 20px; }
+  .modal-body, .ticket-form { padding-left: 18px; padding-right: 18px; }
+  .modal-footer { padding-left: 18px; padding-right: 18px; }
+  .detail-grid, .form-grid, .attachment-list { grid-template-columns: 1fr; }
+  .upload-section { align-items: stretch; flex-direction: column; }
+  .upload-button { justify-content: center; }
+  .form-footer { margin-left: -18px; margin-right: -18px; }
 }
