@@ -1,4 +1,4 @@
-package br.com.helpdesk.ticket;
+package br.com.helpdesk.ticket.model;
 
 public enum TriageStatus {
     PENDING, COMPLETED

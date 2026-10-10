@@ -1,10 +1,10 @@
-package br.com.helpdesk.triage;
+package br.com.helpdesk.triage.integration.gemini;
 
 import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
 
-interface GeminiTransport {
+public interface GeminiTransport {
     GeminiTransportResponse post(URI uri, Duration timeout, String apiKey, String body)
             throws IOException, InterruptedException;
 }

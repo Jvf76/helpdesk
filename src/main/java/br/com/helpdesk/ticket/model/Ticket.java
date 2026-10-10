@@ -1,13 +1,15 @@
-package br.com.helpdesk.ticket;
+package br.com.helpdesk.ticket.model;
 
-import br.com.helpdesk.triage.Category;
-import br.com.helpdesk.triage.Priority;
-import br.com.helpdesk.triage.TriageSuggestion;
+import br.com.helpdesk.triage.model.Category;
+import br.com.helpdesk.triage.model.Priority;
+import br.com.helpdesk.triage.model.TriageSuggestion;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -30,6 +32,10 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     @Column(name = "suggested_category", length = 20)
     private Category suggestedCategory;
+    @Column(name = "triage_confidence", precision = 3, scale = 2)
+    private BigDecimal triageConfidence;
+    @Column(name = "triage_justification", length = 500)
+    private String triageJustification;
     @Enumerated(EnumType.STRING)
     @Column(name = "triage_status", nullable = false, length = 20)
     private TriageStatus triageStatus;
@@ -47,6 +53,8 @@ public class Ticket {
     public void applySuggestion(TriageSuggestion suggestion) {
         this.suggestedPriority = suggestion.priority();
         this.suggestedCategory = suggestion.category();
+        this.triageConfidence = BigDecimal.valueOf(suggestion.confidence());
+        this.triageJustification = suggestion.justification();
         this.triageStatus = TriageStatus.COMPLETED;
     }
 }

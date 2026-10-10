@@ -1,7 +1,14 @@
 package br.com.helpdesk;
 
-import br.com.helpdesk.ticket.*;
-import br.com.helpdesk.triage.*;
+import br.com.helpdesk.ticket.dto.CreateTicketRequest;
+import br.com.helpdesk.ticket.model.TriageStatus;
+import br.com.helpdesk.ticket.repository.TicketRepository;
+import br.com.helpdesk.ticket.service.TicketService;
+import br.com.helpdesk.triage.exception.TriageUnavailableException;
+import br.com.helpdesk.triage.model.Category;
+import br.com.helpdesk.triage.model.Priority;
+import br.com.helpdesk.triage.model.TriageSuggestion;
+import br.com.helpdesk.triage.service.TriageClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +32,14 @@ class HelpdeskApplicationTests {
     @Test
     void persistsAndReloadsSuggestionInPostgres() {
         when(triageClient.suggest(anyString(), anyString()))
-                .thenReturn(new TriageSuggestion(Priority.HIGH, Category.NETWORK));
+                .thenReturn(new TriageSuggestion(Priority.HIGH, Category.NETWORK, 0.91, "Usuário sem acesso à rede"));
         var created = service.create(new CreateTicketRequest("Teste integração", "Sem rede"));
         try {
             var saved = service.findById(created.id());
             assertThat(saved.suggestedPriority()).isEqualTo(Priority.HIGH);
             assertThat(saved.suggestedCategory()).isEqualTo(Category.NETWORK);
+            assertThat(saved.triageConfidence()).isEqualByComparingTo("0.91");
+            assertThat(saved.triageJustification()).isEqualTo("Usuário sem acesso à rede");
             assertThat(saved.triageStatus()).isEqualTo(TriageStatus.COMPLETED);
         } finally {
             repository.deleteById(created.id());
@@ -47,6 +56,8 @@ class HelpdeskApplicationTests {
             assertThat(saved.triageStatus()).isEqualTo(TriageStatus.PENDING);
             assertThat(saved.suggestedPriority()).isNull();
             assertThat(saved.suggestedCategory()).isNull();
+            assertThat(saved.triageConfidence()).isNull();
+            assertThat(saved.triageJustification()).isNull();
         } finally {
             repository.deleteById(created.id());
         }

@@ -1,4 +1,4 @@
-package br.com.helpdesk.ticket;
+package br.com.helpdesk.ticket.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

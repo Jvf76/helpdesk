@@ -1,4 +1,8 @@
-package br.com.helpdesk.ticket;
+package br.com.helpdesk.ticket.controller;
+
+import br.com.helpdesk.ticket.dto.TicketResponse;
+import br.com.helpdesk.ticket.model.TriageStatus;
+import br.com.helpdesk.ticket.service.TicketService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +31,7 @@ class TicketControllerTest {
     void returnsCreatedAndLocation() throws Exception {
         UUID id = UUID.randomUUID();
         when(service.create(any())).thenReturn(new TicketResponse(id, "Título", "Descrição",
-                null, null, TriageStatus.PENDING, Instant.now()));
+                null, null, null, null, TriageStatus.PENDING, Instant.now()));
         mvc.perform(post("/api/tickets").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"Título\",\"description\":\"Descrição\"}"))
                 .andExpect(status().isCreated()).andExpect(header().string("Location", "/api/tickets/" + id))

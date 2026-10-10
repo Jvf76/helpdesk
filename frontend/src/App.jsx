@@ -120,7 +120,7 @@ const priorityClass = {
 
 const priorityLabels = { CRITICAL: 'Crítica', HIGH: 'Alta', MEDIUM: 'Média', LOW: 'Baixa' };
 const priorityScores = { CRITICAL: 100, HIGH: 80, MEDIUM: 50, LOW: 20 };
-const categoryLabels = { HARDWARE: 'Equipamento', SOFTWARE: 'Software', NETWORK: 'Rede', ACCESS: 'Acesso', OTHER: 'Outros' };
+const categoryLabels = { HARDWARE: 'Equipamento', SOFTWARE: 'Software', NETWORK: 'Rede', ACCESS: 'Acesso', EMAIL: 'E-mail', OTHER: 'Outros' };
 
 function Icon({ name, size = 20 }) {
   const paths = {
@@ -283,6 +283,7 @@ function TicketDetailsModal({ ticket, onClose, onAssume, onFinish, onAddCollabor
         </div>
         <div className="detail-section"><span className="detail-label">PROBLEMA INFORMADO</span><p>{ticket.description}</p></div>
         <div className="detail-section"><span className="detail-label">IMPACTO</span><p>{ticket.impact || 'Impacto ainda não informado pelo solicitante.'}</p></div>
+        {ticket.triageJustification && <div className="detail-section"><span className="detail-label"><Icon name="spark" size={15} /> TRIAGEM POR IA</span><p>{ticket.triageJustification}</p><span className="resolution-author">Confiança: {Math.round(ticket.triageConfidence * 100)}%</span></div>}
         {ticket.resolution && <div className="detail-section resolution-detail"><span className="detail-label"><Icon name="check" size={15} /> COMO FOI CORRIGIDO</span><p>{ticket.resolution}</p><span className="resolution-author">Registrado por {ticket.finalizedBy?.name || 'usuário não identificado'}</span></div>}
         <div className="detail-section">
           <span className="detail-label"><Icon name="users" size={15} /> COLABORADORES</span>
@@ -429,6 +430,14 @@ function TicketCreatedModal({ result, onClose }) {
               <small>Setor responsável</small>
               <strong>{result.sector}</strong>
             </span>
+            <span>
+              <small>Confiança da IA</small>
+              <strong>{Math.round(result.triageConfidence * 100)}%</strong>
+            </span>
+            <span>
+              <small>Justificativa</small>
+              <strong>{result.triageJustification}</strong>
+            </span>
           </div>
         ) : (
           <div className="ticket-created-pending">
@@ -505,12 +514,14 @@ function Dashboard({ user, onLogout }) {
       status: triageCompleted ? 'Aberto' : 'Aguardando triagem',
       openedAt: 'Agora mesmo',
       impact: data.impact.trim() || 'Impacto não informado.',
+      triageConfidence: triage.triageConfidence,
+      triageJustification: triage.triageJustification,
       assignee: null,
       collaborators: [],
     };
     setTicketItems((current) => [newTicket, ...current]);
     setCreatingTicket(false);
-    setCreationNotice({ id: newTicket.id, sector: newTicket.sector, triageCompleted, priority: newTicket.priority, category: newTicket.category });
+    setCreationNotice({ id: newTicket.id, sector: newTicket.sector, triageCompleted, priority: newTicket.priority, category: newTicket.category, triageConfidence: newTicket.triageConfidence, triageJustification: newTicket.triageJustification });
   }
 
   function assumeTicket(ticketId) {

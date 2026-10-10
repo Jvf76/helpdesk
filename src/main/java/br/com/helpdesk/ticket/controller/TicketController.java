@@ -1,4 +1,8 @@
-package br.com.helpdesk.ticket;
+package br.com.helpdesk.ticket.controller;
+
+import br.com.helpdesk.ticket.dto.CreateTicketRequest;
+import br.com.helpdesk.ticket.dto.TicketResponse;
+import br.com.helpdesk.ticket.service.TicketService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

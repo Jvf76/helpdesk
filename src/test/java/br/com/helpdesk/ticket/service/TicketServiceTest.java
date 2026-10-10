@@ -1,6 +1,16 @@
-package br.com.helpdesk.ticket;
+package br.com.helpdesk.ticket.service;
 
-import br.com.helpdesk.triage.*;
+import br.com.helpdesk.ticket.dto.CreateTicketRequest;
+import br.com.helpdesk.ticket.dto.TicketResponse;
+import br.com.helpdesk.ticket.model.Ticket;
+import br.com.helpdesk.ticket.model.TriageStatus;
+import br.com.helpdesk.ticket.repository.TicketRepository;
+
+import br.com.helpdesk.triage.exception.TriageUnavailableException;
+import br.com.helpdesk.triage.model.Category;
+import br.com.helpdesk.triage.model.Priority;
+import br.com.helpdesk.triage.model.TriageSuggestion;
+import br.com.helpdesk.triage.service.TriageClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,7 +33,7 @@ class TicketServiceTest {
     void savesBeforeCallingAiThenPersistsSuggestion() {
         when(repository.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(triageClient.suggest("Sem rede", "Todos sem internet"))
-                .thenReturn(new TriageSuggestion(Priority.CRITICAL, Category.NETWORK));
+                .thenReturn(new TriageSuggestion(Priority.CRITICAL, Category.NETWORK, 0.96, "Vários usuários sem acesso à rede"));
 
         TicketResponse result = service.create(new CreateTicketRequest(" Sem rede ", "Todos sem internet"));
 
@@ -31,6 +41,8 @@ class TicketServiceTest {
         assertThat(result.triageStatus()).isEqualTo(TriageStatus.COMPLETED);
         assertThat(result.suggestedPriority()).isEqualTo(Priority.CRITICAL);
         assertThat(result.suggestedCategory()).isEqualTo(Category.NETWORK);
+        assertThat(result.triageConfidence()).isEqualByComparingTo("0.96");
+        assertThat(result.triageJustification()).isEqualTo("Vários usuários sem acesso à rede");
         var order = inOrder(repository, triageClient);
         order.verify(repository).saveAndFlush(any());
         order.verify(triageClient).suggest("Sem rede", "Todos sem internet");
@@ -48,6 +60,8 @@ class TicketServiceTest {
         assertThat(result.triageStatus()).isEqualTo(TriageStatus.PENDING);
         assertThat(result.suggestedPriority()).isNull();
         assertThat(result.suggestedCategory()).isNull();
+        assertThat(result.triageConfidence()).isNull();
+        assertThat(result.triageJustification()).isNull();
         verify(repository, times(1)).saveAndFlush(any());
     }
 

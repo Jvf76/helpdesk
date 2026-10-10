@@ -1,4 +1,4 @@
-package br.com.helpdesk.triage;
+package br.com.helpdesk.triage.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;

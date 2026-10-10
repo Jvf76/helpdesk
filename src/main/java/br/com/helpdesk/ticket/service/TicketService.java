@@ -1,7 +1,11 @@
-package br.com.helpdesk.ticket;
+package br.com.helpdesk.ticket.service;
 
-import br.com.helpdesk.triage.TriageClient;
-import br.com.helpdesk.triage.TriageUnavailableException;
+import br.com.helpdesk.ticket.dto.CreateTicketRequest;
+import br.com.helpdesk.ticket.dto.TicketResponse;
+import br.com.helpdesk.ticket.model.Ticket;
+import br.com.helpdesk.ticket.repository.TicketRepository;
+import br.com.helpdesk.triage.service.TriageClient;
+import br.com.helpdesk.triage.exception.TriageUnavailableException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

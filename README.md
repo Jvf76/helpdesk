@@ -6,7 +6,7 @@ API Java 21 / Spring Boot 4.1.1 / Maven, com PostgreSQL, Flyway e Gemini. Testes
 
 1. `POST /api/tickets` valida título (até 200 caracteres) e descrição (até 10.000), ambos obrigatórios e não em branco.
 2. Salva o chamado com `triageStatus=PENDING` antes da chamada externa.
-3. Envia título e descrição ao Gemini e solicita JSON com prioridade e categoria.
+3. Envia título e descrição ao Gemini e solicita JSON com prioridade, categoria, confiança e justificativa.
 4. Valida os valores e salva as sugestões com `triageStatus=COMPLETED`.
 5. Retorna HTTP 201 e `Location: /api/tickets/{id}`.
 
@@ -17,10 +17,12 @@ Se a IA falhar, exceder 15 segundos, não tiver chave configurada ou devolver da
 | Campo | Valores iniciais |
 | --- | --- |
 | Prioridade sugerida | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` |
-| Categoria sugerida | `HARDWARE`, `SOFTWARE`, `NETWORK`, `ACCESS`, `OTHER` |
+| Categoria sugerida | `HARDWARE`, `SOFTWARE`, `NETWORK`, `ACCESS`, `EMAIL`, `OTHER` |
+| Confiança | número entre `0.0` e `1.0` |
+| Justificativa | frase curta sobre o impacto |
 | Estado da triagem | `PENDING`, `COMPLETED` |
 
-As sugestões ficam separadas de uma futura classificação definitiva. Ainda não há edição, aprovação humana, autenticação, interface visual ou reprocessamento automático. Uma falha de banco ao gravar a sugestão pode retornar erro depois da criação inicial; idempotência será definida em etapa posterior.
+As sugestões ficam separadas de uma futura classificação definitiva. O frontend React oferece login local simples, quadro de chamados ordenado por prioridade e criação com retorno da triagem. Ainda não há autenticação no backend, aprovação humana ou reprocessamento automático. Uma falha de banco ao gravar a sugestão pode retornar erro depois da criação inicial; idempotência será definida em etapa posterior.
 
 ## PostgreSQL
 
@@ -63,7 +65,7 @@ $env:GEMINI_MODEL = 'gemini-3.8-flash'
 | `GEMINI_API_KEY` | Vazia: triagem fica pendente |
 | `GEMINI_MODEL` | `gemini-3.8-flash` |
 
-A chave segue no header `x-goog-api-key`. Título e descrição são enviados à API do Google; a resposta é limitada a categorias/prioridades permitidas e validada localmente. O modelo é configurável sem mudar o código. As sugestões dependem da interpretação do modelo, não são regras determinísticas de SLA.
+A chave segue no header `x-goog-api-key`. Título e descrição são enviados à API do Google como dados não confiáveis; a instrução do sistema manda ignorar comandos presentes no chamado. O Gemini responde em português (`CRITICO`, `ALTA`, `MEDIA`, `BAIXA`; `REDE`, `HARDWARE`, `SOFTWARE`, `ACESSO`, `EMAIL`, `OUTROS`) e a aplicação converte esses valores para os enums usados pela API. Confiança e justificativa também são validadas e persistidas. O modelo é configurável sem mudar o código. As sugestões dependem da interpretação do modelo, não são regras determinísticas de SLA.
 
 ## Executar
 
@@ -105,8 +107,16 @@ mvn verify
 
 ## Estrutura
 
-- `ticket/`: endpoint, validação, serviço, entidade e repositório.
-- `triage/`: interface de triagem e adaptador Gemini.
+- `ticket/controller/`: endpoints REST e tratamento de erros HTTP.
+- `ticket/service/`: regras de aplicação dos chamados.
+- `ticket/repository/`: acesso ao PostgreSQL com Spring Data JPA.
+- `ticket/model/`: entidades e estados do domínio de chamados.
+- `ticket/dto/`: contratos de entrada e saída da API.
+- `triage/service/`: contrato de triagem usado pela aplicação.
+- `triage/model/`: prioridade, categoria e sugestão da triagem.
+- `triage/integration/gemini/`: cliente e transporte HTTP do Gemini.
+- `triage/config/`: configuração e propriedades do provedor.
+- `triage/exception/`: erros específicos da triagem.
 - `src/main/resources/db/migration/`: migrações PostgreSQL.
 - `src/test/java/br/com/helpdesk/`: testes JUnit / Mockito.
 

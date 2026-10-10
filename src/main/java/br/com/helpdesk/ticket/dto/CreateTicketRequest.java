@@ -1,4 +1,4 @@
-package br.com.helpdesk.ticket;
+package br.com.helpdesk.ticket.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

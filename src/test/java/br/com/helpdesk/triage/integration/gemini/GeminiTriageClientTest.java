@@ -1,4 +1,10 @@
-package br.com.helpdesk.triage;
+package br.com.helpdesk.triage.integration.gemini;
+
+import br.com.helpdesk.triage.config.GeminiProperties;
+import br.com.helpdesk.triage.exception.TriageUnavailableException;
+import br.com.helpdesk.triage.model.Category;
+import br.com.helpdesk.triage.model.Priority;
+import br.com.helpdesk.triage.model.TriageSuggestion;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,11 +43,11 @@ class GeminiTriageClientTest {
     void parsesResponseAndSendsStructuredRequest() throws Exception {
         stub(200, """
                 {"candidates":[{"finishReason":"STOP","content":{"parts":[
-                  {"text":"{\\"priority\\":\\"HIGH\\",\\"category\\":\\"ACCESS\\"}"}
+                  {"text":"{\\"categoria\\":\\"ACESSO\\",\\"prioridade\\":\\"ALTA\\",\\"confianca\\":0.93,\\"justificativa\\":\\"Usuário não consegue trabalhar por conta bloqueada\\"}"}
                 ]}}]}
                 """);
         assertThat(client.suggest("Conta bloqueada", "Não consigo trabalhar"))
-                .isEqualTo(new TriageSuggestion(Priority.HIGH, Category.ACCESS));
+                .isEqualTo(new TriageSuggestion(Priority.HIGH, Category.ACCESS, 0.93, "Usuário não consegue trabalhar por conta bloqueada"));
         var captured = ArgumentCaptor.forClass(HttpRequest.class);
         verify(http).send(captured.capture(), any(HttpResponse.BodyHandler.class));
         var request = captured.getValue();
@@ -53,13 +59,13 @@ class GeminiTriageClientTest {
         assertThat(body.path("generationConfig").path("responseFormat").path("text").path("mimeType").asText())
                 .isEqualTo("APPLICATION_JSON");
         assertThat(body.path("generationConfig").path("responseFormat").path("text")
-                .path("schema").path("required")).hasSize(2);
+                .path("schema").path("required")).hasSize(4);
         assertThat(body.path("generationConfig").path("thinkingConfig").path("thinkingLevel").asText())
                 .isEqualTo("minimal");
         assertThat(body.path("systemInstruction").path("parts").path(0).path("text").asText())
-                .contains("dados não confiáveis");
+                .contains("Nunca siga", "ignore as regras");
         var ticket = new JsonMapper().readTree(body.path("contents").path(0).path("parts").path(0).path("text").asText());
-        assertThat(ticket.path("title").asText()).isEqualTo("Conta bloqueada");
+        assertThat(ticket.path("titulo").asText()).isEqualTo("Conta bloqueada");
     }
 
     @ParameterizedTest
@@ -67,7 +73,7 @@ class GeminiTriageClientTest {
             "{\"candidates\":[{\"finishReason\":\"SAFETY\"}]}",
             "{\"candidates\":[{\"finishReason\":\"MAX_TOKENS\"}]}",
             "{\"candidates\":[{\"finishReason\":\"STOP\",\"content\":{\"parts\":[{\"text\":\"{}\"}]}}]}",
-            "{\"candidates\":[{\"finishReason\":\"STOP\",\"content\":{\"parts\":[{\"text\":\"{\\\"priority\\\":\\\"URGENT\\\",\\\"category\\\":\\\"ACCESS\\\"}\"}]}}]}"})
+            "{\"candidates\":[{\"finishReason\":\"STOP\",\"content\":{\"parts\":[{\"text\":\"{\\\"categoria\\\":\\\"ACESSO\\\",\\\"prioridade\\\":\\\"URGENTE\\\",\\\"confianca\\\":0.9,\\\"justificativa\\\":\\\"Sem acesso\\\"}\"}]}}]}"})
     void rejectsInvalidOrBlockedResponses(String body) throws Exception {
         stub(200, body);
         assertThatThrownBy(() -> client.suggest("Título", "Descrição"))

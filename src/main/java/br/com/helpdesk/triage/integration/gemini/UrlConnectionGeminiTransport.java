@@ -1,4 +1,4 @@
-package br.com.helpdesk.triage;
+package br.com.helpdesk.triage.integration.gemini;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,10 +7,10 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
-final class UrlConnectionGeminiTransport implements GeminiTransport {
+public final class UrlConnectionGeminiTransport implements GeminiTransport {
     private final Duration connectTimeout;
 
-    UrlConnectionGeminiTransport(Duration connectTimeout) {
+    public UrlConnectionGeminiTransport(Duration connectTimeout) {
         this.connectTimeout = connectTimeout;
     }
 

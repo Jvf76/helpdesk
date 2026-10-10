@@ -1,4 +1,8 @@
-package br.com.helpdesk.triage;
+package br.com.helpdesk.triage.config;
+
+import br.com.helpdesk.triage.integration.gemini.GeminiTriageClient;
+import br.com.helpdesk.triage.integration.gemini.UrlConnectionGeminiTransport;
+import br.com.helpdesk.triage.service.TriageClient;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
