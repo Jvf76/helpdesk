@@ -23,7 +23,8 @@ public class TicketService {
         try {
             ticket.applySuggestion(triageClient.suggest(ticket.getTitle(), ticket.getDescription()));
         } catch (TriageUnavailableException exception) {
-            log.warn("Triagem indisponível para o chamado {}; mantido como PENDING", ticket.getId());
+            log.warn("Triagem indisponível para o chamado {}; mantido como PENDING: {}",
+                    ticket.getId(), exception.getMessage());
             return TicketResponse.from(ticket);
         }
         return TicketResponse.from(repository.saveAndFlush(ticket));

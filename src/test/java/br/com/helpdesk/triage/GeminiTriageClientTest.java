@@ -30,7 +30,7 @@ class GeminiTriageClientTest {
     @BeforeEach
     void setUp() {
         client = new GeminiTriageClient(http, new JsonMapper(),
-                new GeminiProperties("test-key", "gemini-test", Duration.ofSeconds(15)));
+                new GeminiProperties("test-key", "gemini-3.5-flash-lite", Duration.ofSeconds(15)));
     }
 
     @Test
@@ -47,11 +47,15 @@ class GeminiTriageClientTest {
         var request = captured.getValue();
         assertThat(request.headers().firstValue("x-goog-api-key")).contains("test-key");
         assertThat(request.uri().toString()).isEqualTo(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-test:generateContent");
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent");
         assertThat(request.timeout()).contains(Duration.ofSeconds(15));
         var body = new JsonMapper().readTree(bodyOf(request));
         assertThat(body.path("generationConfig").path("responseFormat").path("text").path("mimeType").asText())
-                .isEqualTo("application/json");
+                .isEqualTo("APPLICATION_JSON");
+        assertThat(body.path("generationConfig").path("responseFormat").path("text")
+                .path("schema").path("required")).hasSize(2);
+        assertThat(body.path("generationConfig").path("thinkingConfig").path("thinkingLevel").asText())
+                .isEqualTo("minimal");
         assertThat(body.path("systemInstruction").path("parts").path(0).path("text").asText())
                 .contains("dados não confiáveis");
         var ticket = new JsonMapper().readTree(body.path("contents").path(0).path("parts").path(0).path("text").asText());

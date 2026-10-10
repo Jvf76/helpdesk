@@ -14,5 +14,5 @@ helpdesk:
   ai:
     gemini:
       api-key: ${GEMINI_API_KEY:}
-      model: ${GEMINI_MODEL:gemini-3.8-flash}
-      timeout: 15s
+      model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
+      timeout: 60s
